@@ -1,6 +1,6 @@
 <?php
 
-$usuario = 'root';
-$pwd = '';
-$dbname='hotel';
-$host='localhost';
+$servername = "localhost";
+$database = "vuelos";
+$username = "root";
+$password = "";
