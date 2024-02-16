@@ -31,8 +31,8 @@ class VuelosModel extends Basedatos {
         try {
             $sql = "SELECT 
                         v.identificador, 
-                        ao.codaeropuerto AS 'aeropuertoorigen',  ao.nombre AS 'aeropuertonombreorigen',  ao.pais AS 'paisorigen', ad.codaeropuerto AS 'aeropuertodestino', 
-                        ad.nombre AS 'aeronamedestino',  ad.pais AS 'paisdestino',  v.tipovuelo, COUNT(p.idpasaje) AS 'idpasaje' 
+                        ao.codaeropuerto AS 'codorigen',  ao.nombre AS 'nombreorigen',  ao.pais AS 'paisorigen', ad.codaeropuerto AS 'coddestino', 
+                        ad.nombre AS 'nombredestino',  ad.pais AS 'paisdestino',  v.tipovuelo, v.fechavuelo, COUNT(p.idpasaje) AS 'pasajes' 
                     FROM vuelo v 
                     JOIN 
                         aeropuerto ao ON v.aeropuertoorigen = ao.codaeropuerto 
