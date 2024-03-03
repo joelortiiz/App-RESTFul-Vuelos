@@ -1,14 +1,13 @@
 <?php
 
-require_once ('./BD/BaseDatos.php');
-require_once ('./models/VuelosModel.php');
+require_once('./BD/BaseDatos.php');
+require_once('./models/PasajesModel.php');
 
 $pasaje = new PasajesModel();
 
 @header("Content-type: application/json");
 
 // GET
-// Si se recibe un parámetro por get, solicitamos un vuelo concreto
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     if (isset($_GET['id'])) {
         $res = $pasaje->getUnPasaje($_GET['id']);
@@ -21,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     }
 }
 
-// Borrar DELETE
+// DELETE
 if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
     $id = $_GET['id'];
     $res = $pasaje->borrar($id);
@@ -30,10 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
     exit();
 }
 
-// Crear un nuevo reg POST
-// Los campos del array que venga se deberán llamar como los campos de la tabla Departamentos
+// POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // se cargan toda la entrada que venga en php://input
     $post = json_decode(file_get_contents('php://input'), true);
     $res = $pasaje->guardar($post);
     $resul['resultado'] = $res;
@@ -41,8 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit();
 }
 
-// Actualizar PUT, se reciben los datoc como en el put
-// Los campos del array que venga se deberán llamar como los campos de la tabla Departamentos
+// PUT
 if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     if (isset($_GET['id'])) {
         $put = json_decode(file_get_contents('php://input'), true);
@@ -53,5 +49,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
     }
 }
 
-// En caso de que ninguna de las opciones anteriores se haya ejecutado
+// 400 Bad Request
 header("HTTP/1.1 400 Bad Request");

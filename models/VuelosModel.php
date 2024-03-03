@@ -49,7 +49,7 @@ class VuelosModel extends Basedatos {
             // Retorna el array de registros
             return $allvuelos;
         } catch (PDOException $e) {
-            return "ERROR AL INTENTAR CARGAR TODOS LOS VUELOS.<br>" . $e->getMessage();
+            return "error al cargar todos los vuelos.<br>" . $e->getMessage();
         }
     }
 
