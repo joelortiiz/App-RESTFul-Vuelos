@@ -8,8 +8,8 @@ $vuel = new VuelosModel();
 // GET
 // Si se recibe un parámetro por get, solicitamos un vuelo concreto
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    if (isset($_GET['id'])) {
-        $res = $vuel->getUnVuelo($_GET["id"]);
+    if (isset($_GET['identificador'])) {
+        $res = $vuel->getVueloId($_GET["identificador"]);
         echo json_encode($res);
         exit();
     }

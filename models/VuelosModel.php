@@ -11,11 +11,11 @@ class VuelosModel extends Basedatos {
     }
 
     // Devuelve un array departamento
-    public function getUnVuelo($nuvuel) {
+    public function getVueloId($ide) {
         try {
             $sql = "SELECT * FROM $this->table WHERE identificador=?";
             $sentencia = $this->conexion->prepare($sql);
-            $sentencia->bindParam(1, $nuvuel);
+            $sentencia->bindParam(1, $ide);
             $sentencia->execute();
             $row = $sentencia->fetch(PDO::FETCH_ASSOC);
             if ($row) {

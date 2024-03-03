@@ -13,11 +13,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $res = $pasaje->getUnPasaje($_GET['id']);
         echo json_encode($res);
         exit();
+    } elseif (isset($_GET['identificador'])) {
+        $res = $pasaje->getPasajesIde($_GET['identificador']);
+        echo json_encode($res);
+        exit();
     } else {
         $res = $pasaje->getAll();
         echo json_encode($res);
         exit();
     }
+   
 }
 
 // DELETE
@@ -32,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
 // POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $post = json_decode(file_get_contents('php://input'), true);
-    $res = $pasaje->guardar($post);
+    $res = $pasaje->aniadir($post);
     $resul['resultado'] = $res;
     echo json_encode($resul);
     exit();
@@ -40,13 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // PUT
 if ($_SERVER['REQUEST_METHOD'] == 'PUT') {
-    if (isset($_GET['id'])) {
+   
         $put = json_decode(file_get_contents('php://input'), true);
-        $res = $pasaje->actualiza($put, $_GET['id']);
-        $resul['mensaje'] = $res;
-        echo json_encode($resul);
+        $res = $pasaje->actualiza($put);
+        $result['mensaje'] = $res;
+        echo json_encode($result);
+                echo json_encode($put);
+
         exit();
-    }
+    
 }
 
 // 400 Bad Request

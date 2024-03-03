@@ -1,4 +1,5 @@
 <?php
+
 class PasajesModel extends Basedatos {
 
     private $table;
@@ -7,7 +8,6 @@ class PasajesModel extends Basedatos {
     public function __construct() {
         $this->table = "pasaje";
         $this->conexion = $this->getConexion();
-        
     }
 
     public function getAll() {
@@ -27,16 +27,16 @@ class PasajesModel extends Basedatos {
             // Retorna el array de registros en formato JSON
             return array("registros1" => $registros1, "registros2" => $registros2, "registros3" => $registros3);
         } catch (PDOException $e) {
-            return "error al cargar.<br>" . $e->getMessage();
+            return "error ->.<br>" . $e->getMessage();
         }
     }
 
     // Devuelve un array departamento
-    public function getUnPasaje($nupasaje) {
+    public function getUnPasaje($id) {
         try {
-            $sql = "SELECT * FROM $this->table WHERE idpasaje=?";
+            $sql = "SELECT * FROM $this->table WHERE idpasaje= ?";
             $sentencia = $this->conexion->prepare($sql);
-            $sentencia->bindParam(1, $nupasaje);
+            $sentencia->bindParam(1, $id);
             $sentencia->execute();
             $row = $sentencia->fetch(PDO::FETCH_ASSOC);
             if ($row) {
@@ -44,89 +44,112 @@ class PasajesModel extends Basedatos {
             }
             return "sin datos";
         } catch (PDOException $e) {
-            return "error al cargar.<br>" . $e->getMessage();
+            return "error al intentar cargar.<br>" . $e->getMessage();
+        }
+    }
+    public function getPasajesIde($ide) {
+        try {
+            $sql1 = "SELECT * FROM pasaje WHERE identificador = ?;";
+            $sentencia1 = $this->conexion->prepare($sql1);
+            $sentencia1->bindParam(1, $ide);
+            $sentencia1->execute();
+            $registros1 = $sentencia1->fetchAll(PDO::FETCH_ASSOC);
+
+            $sql2 = "SELECT ps.* FROM pasaje p JOIN pasajero ps ON p.pasajerocod = ps.pasajerocod WHERE p.identificador = ?;";
+            $sentencia2 = $this->conexion->prepare($sql2);
+            $sentencia2->bindParam(1, $ide);
+            $sentencia2->execute();
+            $registros2 = $sentencia2->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($registros1 && $registros2) {
+                return array("registros1" => $registros1, "registros2" => $registros2);
+            }
+            return false;
+        } catch (PDOException $e) {
+            return "error ->.<br>" . $e->getMessage();
         }
     }
 
-    private function comprobaciones($pasajerocod, $identificador, $numasiento) {
-        $resultados = [];
-
-        // Comprobación de existencia de pasajero en el vuelo
-        $sql1 = "SELECT * FROM $this->table WHERE pasajerocod = ? AND identificador = ?";
-        $stmt1 = $this->conexion->prepare($sql1);
-        $stmt1->execute([$pasajerocod, $identificador]);
-        $resultados['pasajero_vuelo_existente'] = $stmt1->fetch();
-
-        // Comprobación de asiento ocupado
-        $sql2 = "SELECT * FROM $this->table WHERE numasiento = ? AND identificador = ?";
-        $stmt2 = $this->conexion->prepare($sql2);
-        $stmt2->execute([$numasiento, $identificador]);
-        $resultados['asiento_ocupado'] = $stmt2->fetch();
-
-        return $resultados;
-    }
-
-    public function borrar($pasajeno) {
+    public function borrar($id) {
         try {
             $sql = "DELETE FROM $this->table WHERE idpasaje = ?";
             $sentencia = $this->conexion->prepare($sql);
-            $sentencia->bindParam(1, $pasajeno);
+            $sentencia->bindParam(1, $id);
             $sentencia->execute();
             if ($sentencia->rowCount() == 0)
                 return false;
             else
-                return true;
+                return "Se ha borrado el pasaje $id";
         } catch (PDOException $e) {
             return "error al borrar.<br>" . $e->getMessage();
         }
     }
 
-    public function guardar($post) {
+    public function aniadir($post) {
         try {
-            $comprobaciones = $this->comprobaciones($post['pasajerocod'], $post['identificador'], $post['numasiento']);
+            $comprobar = $this->comprobar($post['pasajerocod'], $post['identificador'], $post['numasiento']);
 
-            if ($comprobaciones['pasajero_vuelo_existente']) {
+            if ($comprobar['pasajero_vuelo_existe']) {
                 return "error al insertar. el pasajero " . $post['pasajerocod'] . " ya está en el vuelo " . $post['identificador'];
             }
 
-            if ($comprobaciones['asiento_ocupado']) {
+            if ($comprobar['asiento_ocu']) {
                 return "error al insertar. el número de asiento " . $post['numasiento'] . " ya está ocupado en el vuelo " . $post['identificador'];
             }
 
-            // Inserción del pasaje
             $sql_insert = "INSERT INTO $this->table (pasajerocod, identificador, numasiento, clase, pvp) VALUES (?, ?, ?, ?, ?)";
             $stmt_insert = $this->conexion->prepare($sql_insert);
-            $stmt_insert->execute([$post['pasajerocod'], $post['identificador'], $post['numasiento'], $post['clase'], $post['pvp']]);
+            $stmt_insert->execute(array($post['pasajerocod'], $post['identificador'], $post['numasiento'], $post['clase'], $post['pvp']));
             return "registro insertado correctamente";
         } catch (PDOException $e) {
             return "error sql al insertar: " . $e->getMessage();
         }
     }
 
-    public function actualiza($put, $idpasaje) {
+    public function actualiza($put) {
+
         try {
-            $comprobaciones = $this->comprobaciones($put['pasajerocod'], $put['identificador'], $put['numasiento']);
+            $comprobar = $this->comprobar($put['pasajerocod'], $put['identificador'], $put['numasiento']);
 
-            if ($comprobaciones['pasajero_vuelo_existente']) {
-                return "error al actualizar. el pasajero " . $put['pasajerocod'] . " ya está en el vuelo " . $put['identificador'];
+            if ($comprobar['pasajero_vuelo_existe']) {
+                return "No se puede actualizar porque el pasajero " . $put['pasajerocod'] . " ya está en el vuelo  " . $put['identificador'];
             }
 
-            if ($comprobaciones['asiento_ocupado']) {
-                return "error al actualizar. el número de asiento " . $put['numasiento'] . " ya está ocupado en el vuelo " . $put['identificador'];
+            if ($comprobar['asiento_ocu']) {
+                return "No se puede actualizar porque el asiento " . $put['numasiento'] . " del vuelo " . $put['identificador'] . " ya está ocupado";
             }
 
-            // Actualización del pasaje
             $sql_update = "UPDATE $this->table SET pasajerocod = ?, identificador = ?, numasiento = ?, clase = ?, pvp = ? WHERE idpasaje = ?";
             $stmt_update = $this->conexion->prepare($sql_update);
-            $stmt_update->execute([$put['pasajerocod'], $put['identificador'], $put['numasiento'], $put['clase'], $put['pvp'], $idpasaje]);
+            $stmt_update->execute(array($put['pasajerocod'], $put['identificador'], $put['numasiento'], $put['clase'], $put['pvp'], $put['idpasaje']));
 
             if ($stmt_update->rowCount() > 0) {
-                return "registro actualizado correctamente";
+                return "El pasaje se ha actualizado correctamente";
             } else {
-                return "error al actualizar. no se encontró el pasaje a actualizar";
+                return "Error: No se encontró el pasaje a actualizar";
             }
         } catch (PDOException $e) {
-            return "error sql al actualizar: " . $e->getMessage();
+            return "Error al actualizar: " . $e->getMessage();
         }
+    }
+
+    private function comprobar($pasajerocod, $identificador, $numasiento) {
+
+        $sql1 = "SELECT * FROM $this->table WHERE pasajerocod = ? AND identificador = ?";        
+        // Preparamos y ejecutamos consulta con los datos recibidos
+
+        $stmt1 = $this->conexion->prepare($sql1);
+        $stmt1->execute(array($pasajerocod, $identificador));
+        $result = [];
+        $result['pasajero_vuelo_existe'] = $stmt1->fetch();
+
+        // Comprobación de que si un  asiento está ocupado
+        $sql2 = "SELECT * FROM $this->table WHERE numasiento = ? AND identificador = ?";
+        // Preparamos y ejecutamos consulta con los datos recibidos
+        $stmt2 = $this->conexion->prepare($sql2);
+        $stmt2->execute(array($numasiento, $identificador));
+        $result['asiento_ocu'] = $stmt2->fetch();
+
+        return $result;
     }
 }
